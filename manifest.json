@@ -1,0 +1,26 @@
+{
+  "id": "/?source=pwa",
+  "short_name": "TotemZvíře",
+  "name": "Totemové Zvíře",
+  "description": "Zjisti své totemové zvíře pomocí AI",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/fluency/192/wolf.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://img.icons8.com/fluency/512/wolf.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "orientation": "portrait"
+}

@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { SpiritAnimalData } from "../types";
+import { SpiritAnimalData, DeliveryStop, StopStatus } from "../types";
 
 // Helper to validate environment variable
 const getApiKey = (): string => {
@@ -82,4 +82,57 @@ export const generateAnimalImage = async (visualPrompt: string): Promise<string>
   }
 
   throw new Error("No image data found in response");
+};
+
+export const optimizeRoute = async (rawAddresses: string[]): Promise<DeliveryStop[]> => {
+  const modelId = "gemini-3-flash-preview";
+
+  const prompt = `
+    You are an expert logistics coordinator. 
+    I have a list of delivery addresses. 
+    Please reorder them to form the most logical and efficient driving route starting from the first address provided in the list (assume the first one is the depot or start point).
+    
+    Input addresses:
+    ${JSON.stringify(rawAddresses)}
+
+    Return a JSON object containing a "stops" array. Each item should be an object with:
+    - "address": The corrected full address string.
+    - "note": A very short logic note (e.g. "Stop 1", "Stop 2 - 5km away").
+  `;
+
+  const response = await ai.models.generateContent({
+    model: modelId,
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          stops: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                address: { type: Type.STRING },
+                note: { type: Type.STRING }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  const text = response.text;
+  if (!text) throw new Error("Failed to optimize route");
+
+  const data = JSON.parse(text);
+  
+  // Map to our internal interface
+  return data.stops.map((stop: any, index: number) => ({
+    id: `stop-${Date.now()}-${index}`,
+    address: stop.address,
+    note: stop.note,
+    status: StopStatus.PENDING
+  }));
 };
